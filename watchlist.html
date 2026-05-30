@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kathi's Watchlist</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --netflix: #E50914;
+    --prime: #00A8E0;
+    --disney: #113CCF;
+    --hbo: #8B5CF6;
+    --bg: #0a0a0f;
+    --card-bg: #13131a;
+    --card-border: #1e1e2e;
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --accent: #f0c040;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(180deg, #000 0%, transparent 100%);
+    padding: 24px 32px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo span { color: var(--accent); -webkit-text-fill-color: var(--accent); }
+
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .header-stats b { color: var(--text); font-size: 1rem; }
+
+  /* CONTROLS */
+  .controls {
+    padding: 20px 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 360px;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 16px 10px 40px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .search-wrap input:focus { border-color: var(--accent); }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .filter-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+
+  .pill:hover { border-color: var(--accent); color: var(--text); }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: #000; }
+  .pill.netflix.active { background: var(--netflix); border-color: var(--netflix); color: #fff; }
+  .pill.prime.active { background: var(--prime); border-color: var(--prime); color: #fff; }
+  .pill.disney.active { background: var(--disney); border-color: var(--disney); color: #fff; }
+  .pill.hbo.active { background: var(--hbo); border-color: var(--hbo); color: #fff; }
+
+  /* ADD BUTTON */
+  .btn-add {
+    margin-left: auto;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* SECTIONS */
+  .section {
+    padding: 0 32px 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding-top: 12px;
+  }
+
+  .service-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .service-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+
+  .service-dot.netflix { background: var(--netflix); box-shadow: 0 0 12px var(--netflix)44; }
+  .service-dot.prime { background: var(--prime); box-shadow: 0 0 12px var(--prime)44; }
+  .service-dot.disney { background: var(--disney); box-shadow: 0 0 12px var(--disney)44; }
+  .service-dot.hbo { background: var(--hbo); box-shadow: 0 0 12px var(--hbo)44; }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .section-title.netflix { color: var(--netflix); }
+  .section-title.prime { color: var(--prime); }
+  .section-title.disney { color: var(--disney); }
+  .section-title.hbo { color: var(--hbo); }
+
+  .section-count {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--muted);
+    border: 1px solid var(--card-border);
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+
+  /* TABLE */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+  }
+
+  thead th {
+    background: #0d0d15;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+
+  tbody tr {
+    border-top: 1px solid var(--card-border);
+    transition: background .15s;
+  }
+
+  tbody tr:hover { background: #ffffff06; }
+
+  tbody tr.hidden-row { display: none; }
+
+  td {
+    padding: 11px 14px;
+    vertical-align: middle;
+  }
+
+  .td-title {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .type-badge.serie { background: #1a2a3a; color: #6dc0f0; }
+  .type-badge.film { background: #2a1a2a; color: #d090e0; }
+
+  .genre-tag {
+    display: inline-block;
+    background: #1a1a28;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #9090b8;
+    margin: 1px;
+  }
+
+  .imdb { color: var(--accent); font-weight: 700; }
+  .rt { color: #fa5c5c; font-weight: 700; }
+  .rt.good { color: #4dca7a; }
+
+  /* STATUS SELECT */
+  .status-select {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .status-select.angefangen { border-color: var(--accent); color: var(--accent); }
+  .status-select.gesehen { border-color: #4dca7a; color: #4dca7a; }
+
+  /* PRIORITY SELECT */
+  .prio-select {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .prio-select.hoch { border-color: #fa5c5c; color: #fa5c5c; }
+  .prio-select.mittel { border-color: var(--muted); color: var(--muted); }
+  .prio-select.niedrig { border-color: #4dca7a; color: #4dca7a; }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: color .2s;
+  }
+
+  .delete-btn:hover { color: #fa5c5c; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #13131a;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp .25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    color: var(--accent);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-group label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s;
+    width: 100%;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel {
+    padding: 10px 20px;
+    background: none;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .btn-cancel:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-save {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+
+  .btn-save:hover { opacity: 0.9; }
+
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--card-border);
+    margin: 4px 0;
+  }
+
+  @media (max-width: 768px) {
+    header { padding: 16px; flex-wrap: wrap; gap: 12px; }
+    .controls { padding: 12px 16px; }
+    .section { padding: 0 16px 24px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .header-stats { font-size: 0.72rem; gap: 12px; }
+  }
+
+  .service-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .service-tag.netflix { background: #E5091420; color: var(--netflix); }
+  .service-tag.prime { background: #00A8E020; color: var(--prime); }
+  .service-tag.disney { background: #113CCF20; color: #5577ff; }
+  .service-tag.hbo { background: #8B5CF620; color: #a78bfa; }
+
+  /* SUGGESTION BANNER */
+  .suggestion-banner {
+    margin: 0 32px 8px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+    border: 1px solid #2a2a4a;
+    border-radius: 14px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .suggestion-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, #ffffff04 50%, transparent 100%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  .suggestion-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .suggestion-label svg {
+    animation: spin-slow 4s linear infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .suggestion-divider {
+    width: 1px;
+    height: 36px;
+    background: #2a2a4a;
+    flex-shrink: 0;
+  }
+
+  .suggestion-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .suggestion-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.3s;
+  }
+
+  .suggestion-meta {
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-top: 2px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .suggestion-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .suggestion-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .btn-done {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #4dca7a, #2ecc71);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.84rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform .15s, opacity .15s;
+    white-space: nowrap;
+  }
+
+  .btn-done:hover { transform: translateY(-1px); opacity: 0.9; }
+  .btn-done:active { transform: translateY(0); }
+
+  .btn-skip {
+    padding: 10px 16px;
+    background: none;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.84rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .btn-skip:hover { border-color: var(--accent); color: var(--accent); }
+
+  .suggestion-service-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  .suggestion-title.fade-out { opacity: 0; transform: translateY(-6px); transition: opacity .2s, transform .2s; }
+  .suggestion-title.fade-in  { opacity: 1; transform: translateY(0);   transition: opacity .2s, transform .2s; }
+
+  @media (max-width: 768px) {
+    .suggestion-banner { margin: 0 16px 8px; padding: 14px 16px; flex-wrap: wrap; gap: 12px; }
+    .suggestion-divider { display: none; }
+    .suggestion-label { font-size: 0.6rem; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">KATHI'S <span>WATCHLIST</span></div>
+  <div class="header-stats">
+    <div><b id="total-count">0</b><br>Gesamt</div>
+    <div><b id="netflix-count">0</b><br>Netflix</div>
+    <div><b id="prime-count">0</b><br>Prime</div>
+    <div><b id="disney-count">0</b><br>Disney+</div>
+    <div><b id="hbo-count">0</b><br>HBO Max</div>
+    <div><b id="gesehen-count">0</b><br>Gesehen</div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="search" placeholder="Titel suchen…" oninput="applyFilters()">
+  </div>
+
+  <div class="filter-pills">
+    <button class="pill active" data-filter="all" onclick="setFilter('all', this)">Alle</button>
+    <button class="pill netflix" data-filter="Netflix" onclick="setFilter('Netflix', this)">Netflix</button>
+    <button class="pill prime" data-filter="Amazon Prime" onclick="setFilter('Amazon Prime', this)">Prime</button>
+    <button class="pill disney" data-filter="Disney+" onclick="setFilter('Disney+', this)">Disney+</button>
+    <button class="pill hbo" data-filter="HBO Max" onclick="setFilter('HBO Max', this)">HBO Max</button>
+    <button class="pill" data-filter="Serie" onclick="setFilter('Serie', this)">Serien</button>
+    <button class="pill" data-filter="Film" onclick="setFilter('Film', this)">Filme</button>
+    <button class="pill" data-filter="Gemerkt" onclick="setFilter('Gemerkt', this)">Gemerkt</button>
+    <button class="pill" data-filter="Angefangen" onclick="setFilter('Angefangen', this)">Angefangen</button>
+    <button class="pill" data-filter="Gesehen" onclick="setFilter('Gesehen', this)">Gesehen</button>
+  </div>
+
+  <button class="btn-add" onclick="openModal()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    Hinzufügen
+  </button>
+</div>
+
+
+<!-- SERIENVORSCHLAG -->
+<div class="suggestion-banner" id="suggestion-banner">
+  <div class="suggestion-label">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    Heute schauen
+  </div>
+  <div class="suggestion-divider"></div>
+  <div class="suggestion-info">
+    <div class="suggestion-title" id="suggestion-title">Wird geladen…</div>
+    <div class="suggestion-meta" id="suggestion-meta"></div>
+  </div>
+  <div class="suggestion-actions">
+    <button class="btn-done" id="btn-gesehen">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Gesehen!
+    </button>
+    <button class="btn-skip" id="btn-andere">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+      </svg>
+      Andere Serie
+    </button>
+  </div>
+</div>
+
+<!-- Sections -->
+<div id="sections-container"></div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Neuen Titel hinzufügen</h2>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Titel</label>
+        <input type="text" id="f-titel" placeholder="z.B. Breaking Bad">
+      </div>
+      <div class="form-group">
+        <label>Typ</label>
+        <select id="f-typ">
+          <option value="Serie">Serie</option>
+          <option value="Film">Film</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Streaming-Dienst</label>
+        <select id="f-dienst">
+          <option value="Netflix">Netflix</option>
+          <option value="Amazon Prime">Amazon Prime</option>
+          <option value="HBO Max">HBO Max</option>
+          <option value="Disney+">Disney+</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Genre</label>
+        <input type="text" id="f-genre" placeholder="z.B. Drama, Thriller">
+      </div>
+      <div class="form-group">
+        <label>Jahr</label>
+        <input type="number" id="f-jahr" placeholder="z.B. 2023">
+      </div>
+      <div class="form-group">
+        <label>IMDb</label>
+        <input type="text" id="f-imdb" placeholder="z.B. 8.2">
+      </div>
+      <div class="form-group">
+        <label>Rotten Tomatoes</label>
+        <input type="text" id="f-rt" placeholder="z.B. 94%">
+      </div>
+      <div class="form-group">
+        <label>Staffeln / Laufzeit</label>
+        <input type="text" id="f-staffeln" placeholder="z.B. 5 Staffeln / 142 Min.">
+      </div>
+      <div class="form-group">
+        <label>Serien-Status</label>
+        <select id="f-serie-status">
+          <option value="">–</option>
+          <option value="Laufend">Laufend</option>
+          <option value="Abgeschlossen">Abgeschlossen</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priorität</label>
+        <select id="f-prio">
+          <option value="Mittel">Mittel</option>
+          <option value="Hoch">Hoch</option>
+          <option value="Niedrig">Niedrig</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="Gemerkt">Gemerkt</option>
+          <option value="Angefangen">Angefangen</option>
+          <option value="Gesehen">Gesehen</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Beschreibung (optional)</label>
+        <textarea id="f-notiz" placeholder="Kurze Beschreibung oder Notiz…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+      <button class="btn-save" onclick="addTitle()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================
+// DATA
+// =============================
+let data = [
+  // ---- NETFLIX ----
+  { id:1,  titel:"Avatar – Der Herr der Elemente", typ:"Serie", dienst:"Netflix", genre:"Action, Abenteuer, Animation", jahr:2024, imdb:"7.5", rt:"67%", staffeln:"1 Staffel (laufend)", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"Netflix-Neuverfilmung" },
+  { id:2,  titel:"Ginny & Georgia", typ:"Serie", dienst:"Netflix", genre:"Drama, Komödie", jahr:2021, imdb:"7.7", rt:"53%", staffeln:"3 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:3,  titel:"Fargo", typ:"Serie", dienst:"Netflix", genre:"Crime, Drama", jahr:2014, imdb:"8.9", rt:"97%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:4,  titel:"Death Note", typ:"Serie", dienst:"Netflix", genre:"Anime, Thriller", jahr:2006, imdb:"9.0", rt:"79%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:5,  titel:"Noch nie in meinem Leben", typ:"Serie", dienst:"Netflix", genre:"Romcom, Drama", jahr:2020, imdb:"7.7", rt:"97%", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:6,  titel:"ONE PIECE (Live-Action)", typ:"Serie", dienst:"Netflix", genre:"Action, Abenteuer", jahr:2023, imdb:"8.4", rt:"84%", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"Live-Action" },
+  { id:64, titel:"One Piece (Anime)", typ:"Serie", dienst:"Netflix", genre:"Anime, Action, Abenteuer", jahr:1999, imdb:"9.0", rt:"88%", staffeln:"1000+ Folgen", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"Originaler Manga-Anime" },
+  { id:7,  titel:"Fire Country", typ:"Serie", dienst:"Netflix", genre:"Drama, Action", jahr:2022, imdb:"7.5", rt:"73%", staffeln:"3 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:8,  titel:"Resident Alien", typ:"Serie", dienst:"Netflix", genre:"Sci-Fi, Komödie", jahr:2021, imdb:"8.1", rt:"90%", staffeln:"3 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:9,  titel:"Monster: Die Geschichte von Lyle und Erik Menendez", typ:"Serie", dienst:"Netflix", genre:"True Crime, Drama", jahr:2024, imdb:"6.8", rt:"68%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:10, titel:"Dead to Me", typ:"Serie", dienst:"Netflix", genre:"Drama, Komödie", jahr:2019, imdb:"7.8", rt:"91%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:11, titel:"Borgen – Gefährliche Seilschaften", typ:"Serie", dienst:"Netflix", genre:"Drama, Politik", jahr:2022, imdb:"7.9", rt:"92%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:12, titel:"The Abandons", typ:"Serie", dienst:"Netflix", genre:"Western, Drama", jahr:2025, imdb:"7.2", rt:"–", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:13, titel:"Monster: Die Geschichte von Ed Gein", typ:"Serie", dienst:"Netflix", genre:"True Crime, Drama", jahr:2024, imdb:"7.1", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:14, titel:"F is for Family", typ:"Serie", dienst:"Netflix", genre:"Animation, Komödie", jahr:2015, imdb:"7.9", rt:"78%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:15, titel:"Zero Day", typ:"Serie", dienst:"Netflix", genre:"Thriller, Drama", jahr:2025, imdb:"7.6", rt:"71%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:16, titel:"Ripley", typ:"Serie", dienst:"Netflix", genre:"Thriller, Crime", jahr:2024, imdb:"8.4", rt:"97%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:17, titel:"FUBAR", typ:"Serie", dienst:"Netflix", genre:"Action, Komödie", jahr:2023, imdb:"6.9", rt:"67%", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:18, titel:"American Vandal", typ:"Serie", dienst:"Netflix", genre:"Comedy, Mystery", jahr:2017, imdb:"8.1", rt:"95%", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:19, titel:"Nimona", typ:"Film", dienst:"Netflix", genre:"Animation, Abenteuer", jahr:2023, imdb:"7.6", rt:"94%", staffeln:"95 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:20, titel:"Tuca & Bertie", typ:"Serie", dienst:"Netflix", genre:"Animation, Komödie", jahr:2019, imdb:"7.9", rt:"97%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:21, titel:"Junji Ito Maniac: Japanese Tales of the Macabre", typ:"Serie", dienst:"Netflix", genre:"Horror, Anime", jahr:2023, imdb:"7.0", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:22, titel:"Do Revenge", typ:"Film", dienst:"Netflix", genre:"Komödie, Thriller", jahr:2022, imdb:"6.6", rt:"83%", staffeln:"107 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:23, titel:"Ein besonderes Leben", typ:"Film", dienst:"Netflix", genre:"Drama, Romcom", jahr:2023, imdb:"6.3", rt:"–", staffeln:"105 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:24, titel:"Paradise", typ:"Film", dienst:"Netflix", genre:"Sci-Fi, Thriller", jahr:2023, imdb:"5.8", rt:"–", staffeln:"110 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:25, titel:"The Out-Laws", typ:"Film", dienst:"Netflix", genre:"Action, Komödie", jahr:2023, imdb:"5.7", rt:"32%", staffeln:"96 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:26, titel:"Suburra", typ:"Serie", dienst:"Netflix", genre:"Crime, Drama", jahr:2017, imdb:"7.8", rt:"–", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"Angesehener Trailer" },
+  { id:27, titel:"Das Gesetz nach Lidia Poet", typ:"Serie", dienst:"Netflix", genre:"Drama, Historical", jahr:2023, imdb:"7.4", rt:"–", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"Angesehener Trailer" },
+  { id:28, titel:"Achtsam Morden", typ:"Serie", dienst:"Netflix", genre:"Krimi, Komödie", jahr:2024, imdb:"7.4", rt:"–", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"Weiterschauen" },
+  { id:29, titel:"S.W.A.T.", typ:"Serie", dienst:"Netflix", genre:"Action, Crime", jahr:2017, imdb:"7.2", rt:"76%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen" },
+  { id:30, titel:"Worst Ex Ever", typ:"Serie", dienst:"Netflix", genre:"True Crime, Dokumentation", jahr:2024, imdb:"7.1", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen" },
+  { id:31, titel:"The Cleaning Lady", typ:"Serie", dienst:"Netflix", genre:"Drama, Thriller", jahr:2022, imdb:"7.2", rt:"82%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen" },
+  { id:32, titel:"Peaky Blinders: Gangs of Birmingham", typ:"Film", dienst:"Netflix", genre:"Crime, Drama", jahr:2025, imdb:"–", rt:"–", staffeln:"~120 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"Weiterschauen" },
+
+  // ---- AMAZON PRIME ----
+  { id:100, titel:"Spooks", typ:"Serie", dienst:"Amazon Prime", genre:"Thriller, Spionage", jahr:2002, imdb:"8.2", rt:"83%", staffeln:"10 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:101, titel:"SEAL Team", typ:"Serie", dienst:"Amazon Prime", genre:"Action, Drama", jahr:2017, imdb:"7.7", rt:"–", staffeln:"6 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:102, titel:"Der letzte Bulle", typ:"Serie", dienst:"Amazon Prime", genre:"Krimi, Komödie", jahr:2010, imdb:"7.8", rt:"–", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:103, titel:"The Handmaid's Tale", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Sci-Fi", jahr:2017, imdb:"8.4", rt:"90%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"Im Trend" },
+  { id:104, titel:"The Boys", typ:"Serie", dienst:"Amazon Prime", genre:"Action, Superhelden", jahr:2019, imdb:"8.7", rt:"84%", staffeln:"4 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"TOP 10" },
+  { id:105, titel:"The Man in the High Castle", typ:"Serie", dienst:"Amazon Prime", genre:"Sci-Fi, Drama", jahr:2015, imdb:"7.9", rt:"76%", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:106, titel:"In aller Freundschaft", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Medical", jahr:1998, imdb:"6.8", rt:"–", staffeln:"26 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Niedrig", notiz:"" },
+  { id:107, titel:"The Mentalist", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2008, imdb:"8.1", rt:"72%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:108, titel:"The Good Wife", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Crime", jahr:2009, imdb:"8.3", rt:"95%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:109, titel:"Yellowstone", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Western", jahr:2018, imdb:"8.7", rt:"84%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"Watchlist" },
+  { id:110, titel:"Gotham", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Superhelden", jahr:2014, imdb:"7.8", rt:"71%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:111, titel:"Hawaii Five-0", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Action", jahr:2010, imdb:"7.6", rt:"77%", staffeln:"10 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:112, titel:"Elementary", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2012, imdb:"7.9", rt:"83%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"Im Trend" },
+  { id:113, titel:"NCIS: Hawai'i", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Action", jahr:2021, imdb:"7.0", rt:"79%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:114, titel:"NCIS: Los Angeles", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Action", jahr:2009, imdb:"7.2", rt:"–", staffeln:"14 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:115, titel:"NCIS", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2003, imdb:"7.7", rt:"–", staffeln:"21 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:116, titel:"Blue Bloods", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2010, imdb:"7.5", rt:"70%", staffeln:"14 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:117, titel:"Tulsa King", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Komödie", jahr:2022, imdb:"8.2", rt:"83%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:118, titel:"The Box", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Thriller", jahr:2023, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:119, titel:"A Thin Line", typ:"Serie", dienst:"Amazon Prime", genre:"Thriller, Drama", jahr:2023, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:120, titel:"Your Honor", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Thriller", jahr:2020, imdb:"7.7", rt:"80%", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:121, titel:"Assassins – Brudermord in Kuala Lumpur", typ:"Film", dienst:"Amazon Prime", genre:"Dokumentation, Crime", jahr:2020, imdb:"7.5", rt:"–", staffeln:"100 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:122, titel:"Nawalny", typ:"Film", dienst:"Amazon Prime", genre:"Dokumentation", jahr:2022, imdb:"7.7", rt:"97%", staffeln:"95 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:123, titel:"Royal Blue", typ:"Film", dienst:"Amazon Prime", genre:"Romcom", jahr:2023, imdb:"6.2", rt:"–", staffeln:"121 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:124, titel:"Samaritan", typ:"Film", dienst:"Amazon Prime", genre:"Action, Superhelden", jahr:2022, imdb:"6.4", rt:"39%", staffeln:"102 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:125, titel:"Mord mit Aussicht", typ:"Serie", dienst:"Amazon Prime", genre:"Krimi, Komödie", jahr:2008, imdb:"7.8", rt:"–", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:126, titel:"Eine Wie Keine", typ:"Film", dienst:"Amazon Prime", genre:"Romcom, Komödie", jahr:1999, imdb:"6.2", rt:"65%", staffeln:"91 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:127, titel:"Citadel", typ:"Serie", dienst:"Amazon Prime", genre:"Action, Thriller", jahr:2023, imdb:"6.8", rt:"44%", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"TOP 10" },
+  { id:128, titel:"Good Omens", typ:"Serie", dienst:"Amazon Prime", genre:"Fantasy, Komödie", jahr:2019, imdb:"8.1", rt:"80%", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:129, titel:"Die Gabe", typ:"Serie", dienst:"Amazon Prime", genre:"Thriller, Sci-Fi", jahr:2023, imdb:"7.0", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:130, titel:"The Consultant", typ:"Serie", dienst:"Amazon Prime", genre:"Thriller, Dark Comedy", jahr:2023, imdb:"6.8", rt:"75%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:131, titel:"EVIL", typ:"Serie", dienst:"Amazon Prime", genre:"Horror, Drama", jahr:2019, imdb:"7.7", rt:"97%", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:132, titel:"Californication", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Komödie", jahr:2007, imdb:"8.3", rt:"82%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:133, titel:"Billions", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Finanzen", jahr:2016, imdb:"8.3", rt:"82%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:134, titel:"Super Pumped: Der Kampf um Uber", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, True Story", jahr:2022, imdb:"6.8", rt:"63%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:135, titel:"The Loudest Voice", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, True Story", jahr:2019, imdb:"7.6", rt:"86%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:136, titel:"Dexter", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Thriller", jahr:2006, imdb:"8.6", rt:"68%", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:137, titel:"CSI: Vegas", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2021, imdb:"6.5", rt:"88%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:138, titel:"Addams Family Values", typ:"Film", dienst:"Amazon Prime", genre:"Komödie, Familie", jahr:1993, imdb:"6.9", rt:"79%", staffeln:"90 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:139, titel:"Addams Family", typ:"Film", dienst:"Amazon Prime", genre:"Komödie, Familie", jahr:1991, imdb:"6.9", rt:"64%", staffeln:"95 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:140, titel:"Der rosarote Panther", typ:"Film", dienst:"Amazon Prime", genre:"Komödie", jahr:2006, imdb:"6.2", rt:"21%", staffeln:"88 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:141, titel:"Bohemian Rhapsody", typ:"Film", dienst:"Amazon Prime", genre:"Biopic, Musik", jahr:2018, imdb:"7.9", rt:"61%", staffeln:"134 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:142, titel:"Der Beischläfer", typ:"Serie", dienst:"Amazon Prime", genre:"Komödie, Drama", jahr:2020, imdb:"7.2", rt:"–", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:143, titel:"Solos", typ:"Serie", dienst:"Amazon Prime", genre:"Sci-Fi, Drama", jahr:2021, imdb:"6.4", rt:"60%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Niedrig", notiz:"" },
+  { id:144, titel:"Miss Peregrines Heim für besondere Kinder", typ:"Film", dienst:"Amazon Prime", genre:"Fantasy, Abenteuer", jahr:2016, imdb:"6.7", rt:"63%", staffeln:"127 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:145, titel:"The Walking Dead", typ:"Serie", dienst:"Amazon Prime", genre:"Horror, Drama", jahr:2010, imdb:"8.2", rt:"80%", staffeln:"11 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:146, titel:"King of Queens", typ:"Serie", dienst:"Amazon Prime", genre:"Sitcom, Komödie", jahr:1998, imdb:"7.4", rt:"–", staffeln:"9 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Niedrig", notiz:"" },
+  { id:147, titel:"Scrubs", typ:"Serie", dienst:"Amazon Prime", genre:"Komödie, Medical", jahr:2001, imdb:"8.4", rt:"90%", staffeln:"9 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:148, titel:"Two and a Half Men", typ:"Serie", dienst:"Amazon Prime", genre:"Sitcom, Komödie", jahr:2003, imdb:"7.0", rt:"62%", staffeln:"12 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Niedrig", notiz:"" },
+  { id:149, titel:"Profiling Paris", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2009, imdb:"7.5", rt:"–", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:150, titel:"The Boys - Staffel 1", typ:"Serie", dienst:"Amazon Prime", genre:"Action, Superhelden", jahr:2019, imdb:"8.7", rt:"84%", staffeln:"Watchlist", serieStatus:"Laufend", status:"Gemerkt", prio:"Hoch", notiz:"Doppelt mit The Boys" },
+  { id:151, titel:"Criminal Minds", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Thriller", jahr:2005, imdb:"8.1", rt:"–", staffeln:"15 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:152, titel:"Pastewka", typ:"Serie", dienst:"Amazon Prime", genre:"Komödie", jahr:2005, imdb:"8.2", rt:"–", staffeln:"10 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:153, titel:"Die Nanny", typ:"Serie", dienst:"Amazon Prime", genre:"Sitcom, Komödie", jahr:1993, imdb:"7.3", rt:"–", staffeln:"6 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:154, titel:"Grey's Anatomy", typ:"Serie", dienst:"Amazon Prime", genre:"Drama, Medical", jahr:2005, imdb:"7.6", rt:"96%", staffeln:"20+ Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:155, titel:"Scorpion", typ:"Serie", dienst:"Amazon Prime", genre:"Action, Drama", jahr:2014, imdb:"7.5", rt:"66%", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"Empfohlen" },
+
+  // ---- HBO / MAX (auf Amazon Prime) ----
+  { id:200, titel:"The Chair Company", typ:"Serie", dienst:"HBO Max", genre:"Komödie, Drama", jahr:2025, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"HBO Original" },
+  { id:201, titel:"The Penguin", typ:"Serie", dienst:"HBO Max", genre:"Crime, Superhelden", jahr:2024, imdb:"8.4", rt:"96%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:202, titel:"House of the Dragon", typ:"Serie", dienst:"HBO Max", genre:"Fantasy, Drama", jahr:2022, imdb:"8.4", rt:"85%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"HBO Original" },
+  { id:203, titel:"Die Tribute von Panem – Catching Fire", typ:"Film", dienst:"HBO Max", genre:"Action, Sci-Fi", jahr:2013, imdb:"7.5", rt:"89%", staffeln:"146 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:204, titel:"The Wire", typ:"Serie", dienst:"HBO Max", genre:"Crime, Drama", jahr:2002, imdb:"9.3", rt:"99%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:205, titel:"Wonder Woman 1984", typ:"Film", dienst:"HBO Max", genre:"Action, Superhelden", jahr:2020, imdb:"5.4", rt:"58%", staffeln:"151 Min.", serieStatus:"", status:"Angefangen", prio:"Niedrig", notiz:"" },
+  { id:206, titel:"The Vampire Diaries", typ:"Serie", dienst:"HBO Max", genre:"Horror, Drama", jahr:2009, imdb:"7.7", rt:"–", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:207, titel:"Rooster", typ:"Serie", dienst:"HBO Max", genre:"Drama, Komödie", jahr:2024, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"HBO Original" },
+  { id:208, titel:"DTF St. Louis", typ:"Serie", dienst:"HBO Max", genre:"Komödie, Sport", jahr:2024, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"HBO Original" },
+  { id:209, titel:"Industry", typ:"Serie", dienst:"HBO Max", genre:"Drama, Finanzen", jahr:2020, imdb:"7.5", rt:"88%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"HBO Original" },
+  { id:210, titel:"Zodiac – Die Spur des Killers", typ:"Film", dienst:"HBO Max", genre:"Crime, Thriller", jahr:2007, imdb:"7.7", rt:"89%", staffeln:"157 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:211, titel:"Der ewige Gefangene", typ:"Dokumentation", dienst:"HBO Max", genre:"Dokumentation, True Crime", jahr:2021, imdb:"7.6", rt:"–", staffeln:"–", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"HBO Original" },
+  { id:212, titel:"4 Blocks", typ:"Serie", dienst:"Amazon Prime", genre:"Crime, Drama", jahr:2017, imdb:"8.4", rt:"–", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:213, titel:"Task", typ:"Serie", dienst:"HBO Max", genre:"Crime, Thriller", jahr:2024, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"HBO Original" },
+  { id:214, titel:"Banshee", typ:"Serie", dienst:"HBO Max", genre:"Action, Crime", jahr:2013, imdb:"8.4", rt:"82%", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:215, titel:"The Newsroom", typ:"Serie", dienst:"HBO Max", genre:"Drama", jahr:2012, imdb:"8.5", rt:"54%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:216, titel:"The Leftovers", typ:"Serie", dienst:"HBO Max", genre:"Drama, Mystery", jahr:2014, imdb:"8.3", rt:"92%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:217, titel:"True Blood", typ:"Serie", dienst:"HBO Max", genre:"Horror, Fantasy", jahr:2008, imdb:"7.8", rt:"79%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"HBO Original" },
+  { id:218, titel:"Six Feet Under", typ:"Serie", dienst:"HBO Max", genre:"Drama", jahr:2001, imdb:"8.6", rt:"93%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:219, titel:"Rom", typ:"Serie", dienst:"HBO Max", genre:"Historical, Drama", jahr:2005, imdb:"8.7", rt:"96%", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:220, titel:"Boardwalk Empire", typ:"Serie", dienst:"HBO Max", genre:"Crime, Historical", jahr:2010, imdb:"8.5", rt:"95%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:221, titel:"Peacemaker", typ:"Serie", dienst:"HBO Max", genre:"Action, Komödie", jahr:2022, imdb:"8.0", rt:"94%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:222, titel:"Batman Begins", typ:"Film", dienst:"HBO Max", genre:"Action, Superhelden", jahr:2005, imdb:"8.2", rt:"84%", staffeln:"140 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:223, titel:"Rick and Morty", typ:"Serie", dienst:"HBO Max", genre:"Animation, Sci-Fi", jahr:2013, imdb:"9.1", rt:"93%", staffeln:"7 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:224, titel:"Euphoria", typ:"Serie", dienst:"HBO Max", genre:"Drama", jahr:2019, imdb:"8.4", rt:"83%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:225, titel:"The Batman", typ:"Film", dienst:"HBO Max", genre:"Crime, Superhelden", jahr:2022, imdb:"7.8", rt:"85%", staffeln:"176 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:226, titel:"Dune: Prophecy", typ:"Serie", dienst:"HBO Max", genre:"Sci-Fi, Fantasy", jahr:2024, imdb:"6.8", rt:"63%", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Gemerkt", prio:"Mittel", notiz:"HBO Original" },
+  { id:227, titel:"Succession", typ:"Serie", dienst:"HBO Max", genre:"Drama, Komödie", jahr:2018, imdb:"8.9", rt:"99%", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:228, titel:"Der Herr der Ringe: Die Rückkehr des Königs", typ:"Film", dienst:"HBO Max", genre:"Fantasy, Abenteuer", jahr:2003, imdb:"9.0", rt:"93%", staffeln:"201 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:229, titel:"Der Herr der Ringe: Die zwei Türme", typ:"Film", dienst:"HBO Max", genre:"Fantasy, Abenteuer", jahr:2002, imdb:"8.8", rt:"96%", staffeln:"179 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:230, titel:"Aquaman: Lost Kingdom", typ:"Film", dienst:"HBO Max", genre:"Action, Superhelden", jahr:2023, imdb:"5.4", rt:"33%", staffeln:"124 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:231, titel:"The Dark Knight", typ:"Film", dienst:"HBO Max", genre:"Crime, Superhelden", jahr:2008, imdb:"9.0", rt:"94%", staffeln:"152 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:232, titel:"Harry Potter und der Feuerkelch", typ:"Film", dienst:"HBO Max", genre:"Fantasy, Abenteuer", jahr:2005, imdb:"7.7", rt:"88%", staffeln:"157 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:233, titel:"Dune", typ:"Film", dienst:"HBO Max", genre:"Sci-Fi, Abenteuer", jahr:2021, imdb:"8.0", rt:"83%", staffeln:"155 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:234, titel:"Superman", typ:"Film", dienst:"HBO Max", genre:"Action, Superhelden", jahr:2025, imdb:"–", rt:"–", staffeln:"~130 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:235, titel:"Phantastische Tierwesen: Dumbledores Geheimnisse", typ:"Film", dienst:"HBO Max", genre:"Fantasy, Abenteuer", jahr:2022, imdb:"6.2", rt:"47%", staffeln:"142 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:236, titel:"Der Herr der Ringe: Die Gefährten", typ:"Film", dienst:"HBO Max", genre:"Fantasy, Abenteuer", jahr:2001, imdb:"8.9", rt:"91%", staffeln:"178 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"" },
+  { id:237, titel:"The Last of Us", typ:"Serie", dienst:"HBO Max", genre:"Drama, Horror", jahr:2023, imdb:"8.7", rt:"96%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:238, titel:"The White Lotus", typ:"Serie", dienst:"HBO Max", genre:"Drama, Mystery", jahr:2021, imdb:"7.9", rt:"98%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original" },
+  { id:239, titel:"Game of Thrones", typ:"Serie", dienst:"HBO Max", genre:"Fantasy, Drama", jahr:2011, imdb:"9.2", rt:"87%", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"HBO Original, 15 Jahre Jubiläum" },
+
+  // ---- DISNEY+ ----
+  { id:300, titel:"Criminal Minds (Disney+)", typ:"Serie", dienst:"Disney+", genre:"Crime, Thriller", jahr:2005, imdb:"8.1", rt:"–", staffeln:"15 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen S7" },
+  { id:301, titel:"Grey's Anatomy (Disney+)", typ:"Serie", dienst:"Disney+", genre:"Drama, Medical", jahr:2005, imdb:"7.6", rt:"96%", staffeln:"20 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen S20" },
+  { id:302, titel:"9-1-1: Nashville", typ:"Serie", dienst:"Disney+", genre:"Drama, Action", jahr:2025, imdb:"7.2", rt:"–", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen S1" },
+  { id:303, titel:"Castle", typ:"Serie", dienst:"Disney+", genre:"Crime, Romcom", jahr:2009, imdb:"8.0", rt:"70%", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"Weiterschauen S7" },
+  { id:304, titel:"The Testaments – Die Zeuginnen", typ:"Serie", dienst:"Disney+", genre:"Drama, Sci-Fi", jahr:2019, imdb:"8.0", rt:"92%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Weiterschauen S1" },
+  { id:305, titel:"Daredevil: Born Again", typ:"Serie", dienst:"Disney+", genre:"Action, Superhelden", jahr:2025, imdb:"8.1", rt:"93%", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"Disney+ Original" },
+  { id:306, titel:"Atlanta Medical", typ:"Serie", dienst:"Disney+", genre:"Drama, Medical", jahr:2015, imdb:"7.0", rt:"–", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:307, titel:"Love Story: John F. Kennedy Jr. & Carolyn Bessette", typ:"Dokumentation", dienst:"Disney+", genre:"Dokumentation", jahr:2024, imdb:"–", rt:"–", staffeln:"–", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:308, titel:"The Twisted Tale of Amanda Knox", typ:"Dokumentation", dienst:"Disney+", genre:"True Crime, Dokumentation", jahr:2024, imdb:"–", rt:"–", staffeln:"–", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:309, titel:"Wonder Man", typ:"Serie", dienst:"Disney+", genre:"Action, Komödie", jahr:2025, imdb:"–", rt:"–", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"Marvel Original" },
+  { id:310, titel:"Homeland", typ:"Serie", dienst:"Disney+", genre:"Thriller, Drama", jahr:2011, imdb:"8.3", rt:"84%", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"Weiterschauen S6" },
+  { id:311, titel:"Star Wars: Die Rückkehr der Jedi-Ritter", typ:"Film", dienst:"Disney+", genre:"Sci-Fi, Abenteuer", jahr:1983, imdb:"8.3", rt:"82%", staffeln:"135 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:312, titel:"White Collar", typ:"Serie", dienst:"Disney+", genre:"Crime, Drama", jahr:2009, imdb:"7.9", rt:"–", staffeln:"6 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"Weiterschauen S1" },
+  { id:313, titel:"Harrow", typ:"Serie", dienst:"Disney+", genre:"Crime, Drama", jahr:2018, imdb:"7.5", rt:"–", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:314, titel:"Star Wars: The Clone Wars", typ:"Serie", dienst:"Disney+", genre:"Animation, Sci-Fi", jahr:2008, imdb:"8.4", rt:"–", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:315, titel:"Star Wars: Die dunkle Bedrohung", typ:"Film", dienst:"Disney+", genre:"Sci-Fi, Abenteuer", jahr:1999, imdb:"6.5", rt:"51%", staffeln:"136 Min.", serieStatus:"", status:"Angefangen", prio:"Niedrig", notiz:"" },
+  { id:316, titel:"Der Name der Rose", typ:"Serie", dienst:"Disney+", genre:"Historical, Mystery", jahr:2019, imdb:"7.8", rt:"–", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:317, titel:"Avatar – Aufbruch nach Pandora", typ:"Film", dienst:"Disney+", genre:"Sci-Fi, Abenteuer", jahr:2009, imdb:"7.9", rt:"81%", staffeln:"162 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:318, titel:"Sons of Anarchy", typ:"Serie", dienst:"Disney+", genre:"Crime, Drama", jahr:2008, imdb:"8.6", rt:"89%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:319, titel:"Once Upon a Time – Es war einmal", typ:"Serie", dienst:"Disney+", genre:"Fantasy, Drama", jahr:2011, imdb:"7.3", rt:"75%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:320, titel:"Heiter bis tödlich – Morden im Norden", typ:"Serie", dienst:"Disney+", genre:"Krimi, Komödie", jahr:2012, imdb:"6.7", rt:"–", staffeln:"8 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:321, titel:"Alien: Earth", typ:"Serie", dienst:"Disney+", genre:"Sci-Fi, Horror", jahr:2025, imdb:"7.7", rt:"85%", staffeln:"1 Staffel", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:322, titel:"Prison Break", typ:"Serie", dienst:"Disney+", genre:"Action, Thriller", jahr:2005, imdb:"8.3", rt:"61%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:323, titel:"Nord Nord Mord – Sievers und die fünf Fragen", typ:"Film", dienst:"Disney+", genre:"Krimi", jahr:2024, imdb:"7.0", rt:"–", staffeln:"90 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:324, titel:"Superstore", typ:"Serie", dienst:"Disney+", genre:"Sitcom, Komödie", jahr:2015, imdb:"7.9", rt:"92%", staffeln:"6 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:325, titel:"Death in Paradise", typ:"Serie", dienst:"Disney+", genre:"Krimi, Komödie", jahr:2011, imdb:"7.7", rt:"–", staffeln:"13 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:326, titel:"Mord im Mittsommer", typ:"Serie", dienst:"Disney+", genre:"Krimi, Drama", jahr:1997, imdb:"7.7", rt:"–", staffeln:"–", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:327, titel:"The Bear: King of the Kitchen", typ:"Serie", dienst:"Disney+", genre:"Drama, Komödie", jahr:2022, imdb:"8.6", rt:"98%", staffeln:"3 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:328, titel:"The Rookie", typ:"Serie", dienst:"Disney+", genre:"Crime, Drama", jahr:2018, imdb:"8.0", rt:"84%", staffeln:"7 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:329, titel:"Mufasa: Der König der Löwen", typ:"Film", dienst:"Disney+", genre:"Animation, Drama", jahr:2024, imdb:"6.4", rt:"74%", staffeln:"118 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:330, titel:"Perception", typ:"Serie", dienst:"Disney+", genre:"Crime, Drama", jahr:2012, imdb:"7.4", rt:"–", staffeln:"4 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:331, titel:"Will Trent", typ:"Serie", dienst:"Disney+", genre:"Crime, Drama", jahr:2023, imdb:"7.8", rt:"80%", staffeln:"3 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:332, titel:"9-1-1: Lone Star", typ:"Serie", dienst:"Disney+", genre:"Drama, Action", jahr:2020, imdb:"7.5", rt:"–", staffeln:"5 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:333, titel:"Private Practice", typ:"Serie", dienst:"Disney+", genre:"Drama, Medical", jahr:2007, imdb:"7.1", rt:"63%", staffeln:"6 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:334, titel:"The Falcon and the Winter Soldier", typ:"Serie", dienst:"Disney+", genre:"Action, Superhelden", jahr:2021, imdb:"7.2", rt:"81%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:335, titel:"Gilmore Girls", typ:"Serie", dienst:"Disney+", genre:"Drama, Komödie", jahr:2000, imdb:"8.1", rt:"93%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:336, titel:"Marie Antoinette", typ:"Serie", dienst:"Disney+", genre:"Historical, Drama", jahr:2022, imdb:"7.0", rt:"82%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:337, titel:"Seattle Firefighters – Die jungen Helden", typ:"Serie", dienst:"Disney+", genre:"Drama, Action", jahr:2018, imdb:"6.7", rt:"–", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:338, titel:"New Girl", typ:"Serie", dienst:"Disney+", genre:"Sitcom, Romcom", jahr:2011, imdb:"7.9", rt:"89%", staffeln:"7 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:339, titel:"Doctor Strange in the Multiverse of Madness", typ:"Film", dienst:"Disney+", genre:"Action, Superhelden", jahr:2022, imdb:"6.9", rt:"74%", staffeln:"126 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:340, titel:"Godfather of Harlem", typ:"Serie", dienst:"Disney+", genre:"Crime, Historical", jahr:2019, imdb:"8.3", rt:"89%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:341, titel:"Ice Age", typ:"Film", dienst:"Disney+", genre:"Animation, Komödie", jahr:2002, imdb:"7.5", rt:"78%", staffeln:"81 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:342, titel:"Kingsman: The Secret Service", typ:"Film", dienst:"Disney+", genre:"Action, Komödie", jahr:2015, imdb:"7.7", rt:"74%", staffeln:"129 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:343, titel:"Marvel Studios' The First Avenger: Civil War", typ:"Film", dienst:"Disney+", genre:"Action, Superhelden", jahr:2016, imdb:"7.8", rt:"91%", staffeln:"147 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:344, titel:"Big Sky", typ:"Serie", dienst:"Disney+", genre:"Thriller, Crime", jahr:2020, imdb:"7.1", rt:"–", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:345, titel:"Tell Me Lies", typ:"Serie", dienst:"Disney+", genre:"Drama, Thriller", jahr:2022, imdb:"7.0", rt:"62%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:346, titel:"Tracker", typ:"Serie", dienst:"Disney+", genre:"Drama, Crime", jahr:2024, imdb:"7.3", rt:"71%", staffeln:"2 Staffeln", serieStatus:"Laufend", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:347, titel:"Lost", typ:"Serie", dienst:"Disney+", genre:"Mystery, Drama", jahr:2004, imdb:"8.3", rt:"85%", staffeln:"6 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"" },
+  { id:348, titel:"Deadpool 2", typ:"Film", dienst:"Disney+", genre:"Action, Komödie", jahr:2018, imdb:"7.7", rt:"84%", staffeln:"119 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:349, titel:"Taylor Swift: The Eras Tour", typ:"Film", dienst:"Disney+", genre:"Musik, Konzert", jahr:2024, imdb:"8.5", rt:"–", staffeln:"225 Min.", serieStatus:"", status:"Gemerkt", prio:"Hoch", notiz:"Taylor's Version" },
+  { id:350, titel:"Scream Queens", typ:"Serie", dienst:"Disney+", genre:"Horror, Komödie", jahr:2015, imdb:"7.7", rt:"67%", staffeln:"2 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:351, titel:"Alien – Das unheimliche Wesen", typ:"Film", dienst:"Disney+", genre:"Horror, Sci-Fi", jahr:1979, imdb:"8.5", rt:"98%", staffeln:"117 Min.", serieStatus:"", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:352, titel:"Agatha All Along", typ:"Serie", dienst:"Disney+", genre:"Fantasy, Superhelden", jahr:2024, imdb:"7.4", rt:"75%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"Disney+ Original" },
+  { id:353, titel:"Rivals", typ:"Serie", dienst:"Disney+", genre:"Drama, Romance", jahr:2024, imdb:"7.1", rt:"93%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Mittel", notiz:"" },
+  { id:354, titel:"Tim Burton's The Nightmare Before Christmas", typ:"Film", dienst:"Disney+", genre:"Animation, Musical", jahr:1993, imdb:"8.0", rt:"95%", staffeln:"76 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:355, titel:"Shogun", typ:"Serie", dienst:"Disney+", genre:"Historical, Drama", jahr:2024, imdb:"8.7", rt:"99%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Hoch", notiz:"Meine Liste" },
+  { id:356, titel:"What We Do in the Shadows", typ:"Serie", dienst:"Disney+", genre:"Horror, Komödie", jahr:2019, imdb:"8.6", rt:"97%", staffeln:"5 Staffeln", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:357, titel:"The Darkest Minds – Die Überlebenden", typ:"Film", dienst:"Disney+", genre:"Sci-Fi, Abenteuer", jahr:2018, imdb:"5.7", rt:"23%", staffeln:"105 Min.", serieStatus:"", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:358, titel:"Secret Invasion", typ:"Serie", dienst:"Disney+", genre:"Action, Superhelden", jahr:2023, imdb:"6.0", rt:"62%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Niedrig", notiz:"" },
+  { id:359, titel:"Braveheart", typ:"Film", dienst:"Disney+", genre:"Historical, Action", jahr:1995, imdb:"8.4", rt:"78%", staffeln:"177 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:360, titel:"Encanto", typ:"Film", dienst:"Disney+", genre:"Animation, Musical", jahr:2021, imdb:"7.2", rt:"91%", staffeln:"99 Min.", serieStatus:"", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:361, titel:"A Teacher", typ:"Serie", dienst:"Disney+", genre:"Drama, Thriller", jahr:2020, imdb:"6.7", rt:"88%", staffeln:"1 Staffel", serieStatus:"Abgeschlossen", status:"Gemerkt", prio:"Mittel", notiz:"" },
+  { id:362, titel:"Daredevil (Classic)", typ:"Serie", dienst:"Disney+", genre:"Action, Crime", jahr:2015, imdb:"8.6", rt:"90%", staffeln:"3 Staffeln", serieStatus:"Abgeschlossen", status:"Angefangen", prio:"Hoch", notiz:"S2 weiterschauen" },
+];
+
+let nextId = 400;
+let activeFilter = 'all';
+let activeSearch = '';
+
+// Remove duplicate "The Boys" entry
+data = data.filter(d => d.id !== 150);
+
+function applyFilters() {
+  activeSearch = document.getElementById('search').value.toLowerCase();
+  renderAll();
+}
+
+function setFilter(val, btn) {
+  activeFilter = val;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function matchesFilter(item) {
+  const f = activeFilter;
+  if (f !== 'all') {
+    if (f === 'Netflix' || f === 'Amazon Prime' || f === 'HBO Max' || f === 'Disney+') {
+      if (item.dienst !== f) return false;
+    } else if (f === 'Serie' || f === 'Film') {
+      if (item.typ !== f) return false;
+    } else if (f === 'Gemerkt' || f === 'Angefangen' || f === 'Gesehen') {
+      if (item.status !== f) return false;
+    }
+  }
+  if (activeSearch) {
+    const hay = (item.titel + item.genre + item.notiz).toLowerCase();
+    if (!hay.includes(activeSearch)) return false;
+  }
+  return true;
+}
+
+function renderAll() {
+  const container = document.getElementById('sections-container');
+  const services = ['Netflix', 'Amazon Prime', 'HBO Max', 'Disney+'];
+  const colors = { Netflix: 'netflix', 'Amazon Prime': 'prime', 'HBO Max': 'hbo', 'Disney+': 'disney' };
+
+  let html = '';
+  let totalVisible = 0;
+  const counts = { Netflix: 0, 'Amazon Prime': 0, 'HBO Max': 0, 'Disney+': 0, gesehen: 0 };
+
+  services.forEach(svc => {
+    const items = data.filter(d => d.dienst === svc && matchesFilter(d));
+    counts[svc] = data.filter(d => d.dienst === svc).length;
+    counts.gesehen += data.filter(d => d.dienst === svc && d.status === 'Gesehen').length;
+    totalVisible += items.length;
+
+    const cls = colors[svc];
+    if (items.length === 0 && activeFilter !== 'all' && activeFilter !== svc) return;
+
+    html += `
+      <div class="section">
+        <div class="section-header">
+          <div class="service-badge">
+            <div class="service-dot ${cls}"></div>
+            <div class="section-title ${cls}">${svc === 'Amazon Prime' ? 'AMAZON PRIME' : svc === 'HBO Max' ? 'HBO MAX' : svc.toUpperCase()}</div>
+          </div>
+          <div class="section-count">${items.length} Titel</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Typ</th>
+                <th>Genre</th>
+                <th>Jahr</th>
+                <th>IMDb</th>
+                <th>RT</th>
+                <th>Staffeln/Laufzeit</th>
+                <th>Status</th>
+                <th>Priorität</th>
+                <th>Notizen</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    if (items.length === 0) {
+      html += `<tr><td colspan="11" class="no-results">Keine Titel gefunden</td></tr>`;
+    } else {
+      items.forEach(item => {
+        const rtClass = item.rt && item.rt !== '–' && parseInt(item.rt) >= 70 ? 'good' : '';
+        const genres = item.genre.split(',').map(g => `<span class="genre-tag">${g.trim()}</span>`).join('');
+        html += `
+          <tr data-id="${item.id}">
+            <td class="td-title" title="${item.titel}">${item.titel}</td>
+            <td><span class="type-badge ${item.typ.toLowerCase()}">${item.typ}</span></td>
+            <td>${genres}</td>
+            <td>${item.jahr}</td>
+            <td class="imdb">${item.imdb || '–'}</td>
+            <td class="rt ${rtClass}">${item.rt || '–'}</td>
+            <td>${item.staffeln}${item.serieStatus ? ' · ' + item.serieStatus : ''}</td>
+            <td>
+              <select class="status-select ${item.status.toLowerCase().replace(' ','-')}" onchange="updateField(${item.id},'status',this.value);this.className='status-select '+this.value.toLowerCase().replace(' ','-')">
+                <option ${item.status==='Gemerkt'?'selected':''}>Gemerkt</option>
+                <option ${item.status==='Angefangen'?'selected':''}>Angefangen</option>
+                <option ${item.status==='Gesehen'?'selected':''}>Gesehen</option>
+              </select>
+            </td>
+            <td>
+              <select class="prio-select ${item.prio.toLowerCase()}" onchange="updateField(${item.id},'prio',this.value);this.className='prio-select '+this.value.toLowerCase()">
+                <option ${item.prio==='Hoch'?'selected':''}>Hoch</option>
+                <option ${item.prio==='Mittel'?'selected':''}>Mittel</option>
+                <option ${item.prio==='Niedrig'?'selected':''}>Niedrig</option>
+              </select>
+            </td>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:0.78rem">${item.notiz||'–'}</td>
+            <td><button class="delete-btn" onclick="deleteTitle(${item.id})" title="Löschen">✕</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    html += `</tbody></table></div></div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Update stats
+  document.getElementById('total-count').textContent = data.length;
+  document.getElementById('netflix-count').textContent = counts['Netflix'];
+  document.getElementById('prime-count').textContent = counts['Amazon Prime'];
+  document.getElementById('hbo-count').textContent = counts['HBO Max'];
+  document.getElementById('disney-count').textContent = counts['Disney+'];
+  document.getElementById('gesehen-count').textContent = data.filter(d => d.status === 'Gesehen').length;
+}
+
+function updateField(id, field, value) {
+  const item = data.find(d => d.id === id);
+  if (item) {
+    item[field] = value;
+  }
+}
+
+function deleteTitle(id) {
+  if (!confirm('Titel wirklich löschen?')) return;
+  data = data.filter(d => d.id !== id);
+  renderAll();
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('f-titel').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  // Reset form
+  ['f-titel','f-genre','f-jahr','f-imdb','f-rt','f-staffeln','f-notiz'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function addTitle() {
+  const titel = document.getElementById('f-titel').value.trim();
+  if (!titel) { alert('Bitte einen Titel eingeben!'); return; }
+
+  const newItem = {
+    id: nextId++,
+    titel,
+    typ: document.getElementById('f-typ').value,
+    dienst: document.getElementById('f-dienst').value,
+    genre: document.getElementById('f-genre').value || 'Unbekannt',
+    jahr: parseInt(document.getElementById('f-jahr').value) || new Date().getFullYear(),
+    imdb: document.getElementById('f-imdb').value || '–',
+    rt: document.getElementById('f-rt').value || '–',
+    staffeln: document.getElementById('f-staffeln').value || '–',
+    serieStatus: document.getElementById('f-serie-status').value,
+    prio: document.getElementById('f-prio').value,
+    status: document.getElementById('f-status').value,
+    notiz: document.getElementById('f-notiz').value || '',
+  };
+
+  data.push(newItem);
+  closeModal();
+  renderAll();
+}
+
+// Close modal on overlay click
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Initial render
+renderAll();
+
+// =============================
+// SERIENVORSCHLAG — localStorage (GitHub Pages)
+// =============================
+var currentSuggId = null;
+var svcColors = { Netflix: '#E50914', 'Amazon Prime': '#00A8E0', 'HBO Max': '#8B5CF6', 'Disney+': '#113CCF' };
+
+function getPool() {
+  return data.filter(function(d) { return d.typ === 'Serie' && d.status !== 'Gesehen'; });
+}
+
+function saveId(id) {
+  try { localStorage.setItem('watchlist_sugg_id', String(id)); } catch(e) {}
+}
+
+function getSavedId() {
+  try { return parseInt(localStorage.getItem('watchlist_sugg_id')) || null; } catch(e) { return null; }
+}
+
+function showSuggestion(item, animate) {
+  if (!item) return;
+  currentSuggId = item.id;
+  var titleEl = document.getElementById('suggestion-title');
+  var metaEl  = document.getElementById('suggestion-meta');
+  var color = svcColors[item.dienst] || '#fff';
+
+  function doUpdate() {
+    titleEl.textContent = item.titel;
+    titleEl.className = 'suggestion-title fade-in';
+    metaEl.innerHTML =
+      '<span><span class="suggestion-service-dot" style="background:' + color + '"></span>' + item.dienst + '</span>' +
+      '<span>⭐ ' + (item.imdb || '–') + '</span>' +
+      '<span>📺 ' + (item.staffeln || '–') + '</span>' +
+      '<span style="color:' + (item.status === 'Angefangen' ? 'var(--accent)' : 'var(--muted)') + '">' + item.status + '</span>';
+  }
+
+  if (animate) {
+    titleEl.className = 'suggestion-title fade-out';
+    setTimeout(doUpdate, 220);
+  } else {
+    doUpdate();
+  }
+}
+
+function nextSuggestion() {
+  var pool = getPool();
+  if (pool.length === 0) return;
+  var idx = pool.findIndex(function(d) { return d.id === currentSuggId; });
+  var next = pool[(idx + 1) % pool.length];
+  saveId(next.id);
+  showSuggestion(next, true);
+}
+
+function markSuggestionDone() {
+  if (!currentSuggId) return;
+  var item = data.find(function(d) { return d.id === currentSuggId; });
+  if (item) { item.status = 'Gesehen'; renderAll(); }
+  var pool = getPool();
+  if (pool.length === 0) return;
+  var next = pool[0];
+  saveId(next.id);
+  showSuggestion(next, true);
+}
+
+// Init: gespeicherte ID aus localStorage, sonst erste aus Pool
+(function() {
+  document.getElementById('btn-gesehen').addEventListener('click', markSuggestionDone);
+  document.getElementById('btn-andere').addEventListener('click', nextSuggestion);
+  var pool = getPool();
+  if (pool.length === 0) return;
+  var savedId = getSavedId();
+  var item = savedId ? pool.find(function(d) { return d.id === savedId; }) : null;
+  if (!item) { item = pool[0]; saveId(item.id); }
+  showSuggestion(item);
+})();
+
+</script>
+</body>
+</html>
