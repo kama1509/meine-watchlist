@@ -682,13 +682,13 @@
     <div class="suggestion-meta" id="suggestion-meta"></div>
   </div>
   <div class="suggestion-actions">
-    <button class="btn-done" id="btn-gesehen">
+    <button class="btn-done" id="btn-gesehen" onclick="markSuggestionDone()">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
       Gesehen!
     </button>
-    <button class="btn-skip" id="btn-andere">
+    <button class="btn-skip" id="btn-andere" onclick="nextSuggestion()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
       </svg>
@@ -1181,26 +1181,17 @@ document.getElementById('modal').addEventListener('click', function(e) {
 renderAll();
 
 // =============================
-// SERIENVORSCHLAG — localStorage (GitHub Pages)
+// SERIENVORSCHLAG — immer erste ungesehene Serie
 // =============================
-var currentSuggId = null;
+var currentSuggIdx = 0;
 var svcColors = { Netflix: '#E50914', 'Amazon Prime': '#00A8E0', 'HBO Max': '#8B5CF6', 'Disney+': '#113CCF' };
 
 function getPool() {
   return data.filter(function(d) { return d.typ === 'Serie' && d.status !== 'Gesehen'; });
 }
 
-function saveId(id) {
-  try { localStorage.setItem('watchlist_sugg_id', String(id)); } catch(e) {}
-}
-
-function getSavedId() {
-  try { return parseInt(localStorage.getItem('watchlist_sugg_id')) || null; } catch(e) { return null; }
-}
-
 function showSuggestion(item, animate) {
   if (!item) return;
-  currentSuggId = item.id;
   var titleEl = document.getElementById('suggestion-title');
   var metaEl  = document.getElementById('suggestion-meta');
   var color = svcColors[item.dienst] || '#fff';
@@ -1226,38 +1217,31 @@ function showSuggestion(item, animate) {
 function nextSuggestion() {
   var pool = getPool();
   if (pool.length === 0) return;
-  var idx = pool.findIndex(function(d) { return d.id === currentSuggId; });
-  var next = pool[(idx + 1) % pool.length];
-  saveId(next.id);
-  showSuggestion(next, true);
+  currentSuggIdx = (currentSuggIdx + 1) % pool.length;
+  showSuggestion(pool[currentSuggIdx], true);
 }
 
 function markSuggestionDone() {
-  if (!currentSuggId) return;
-  var item = data.find(function(d) { return d.id === currentSuggId; });
-  if (item) { item.status = 'Gesehen'; renderAll(); }
   var pool = getPool();
-  if (pool.length === 0) return;
-  var next = pool[0];
-  saveId(next.id);
-  showSuggestion(next, true);
+  var item = pool[currentSuggIdx];
+  if (item) { item.status = 'Gesehen'; renderAll(); }
+  var newPool = getPool();
+  if (newPool.length === 0) return;
+  currentSuggIdx = 0;
+  showSuggestion(newPool[0], true);
 }
 
-// Init: onclick direkt setzen — wartet bis DOM fertig ist
+// Explizit global machen damit onclick="" im HTML funktioniert
+window.nextSuggestion = nextSuggestion;
+window.markSuggestionDone = markSuggestionDone;
+
 function initSuggestion() {
-  var btnG = document.getElementById('btn-gesehen');
-  var btnA = document.getElementById('btn-andere');
-  if (!btnG || !btnA) { setTimeout(initSuggestion, 100); return; }
-  btnG.onclick = markSuggestionDone;
-  btnA.onclick = nextSuggestion;
   var pool = getPool();
   if (pool.length === 0) return;
-  var savedId = getSavedId();
-  var item = savedId ? pool.find(function(d) { return d.id === savedId; }) : null;
-  if (!item) { item = pool[0]; saveId(item.id); }
-  showSuggestion(item);
+  currentSuggIdx = 0;
+  showSuggestion(pool[0]);
 }
-window.onload = initSuggestion;
+window.addEventListener('load', initSuggestion);
 
 </script>
 </body>
