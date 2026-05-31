@@ -1243,17 +1243,21 @@ function markSuggestionDone() {
   showSuggestion(next, true);
 }
 
-// Init: gespeicherte ID aus localStorage, sonst erste aus Pool
-(function() {
-  document.getElementById('btn-gesehen').addEventListener('click', markSuggestionDone);
-  document.getElementById('btn-andere').addEventListener('click', nextSuggestion);
+// Init: onclick direkt setzen — wartet bis DOM fertig ist
+function initSuggestion() {
+  var btnG = document.getElementById('btn-gesehen');
+  var btnA = document.getElementById('btn-andere');
+  if (!btnG || !btnA) { setTimeout(initSuggestion, 100); return; }
+  btnG.onclick = markSuggestionDone;
+  btnA.onclick = nextSuggestion;
   var pool = getPool();
   if (pool.length === 0) return;
   var savedId = getSavedId();
   var item = savedId ? pool.find(function(d) { return d.id === savedId; }) : null;
   if (!item) { item = pool[0]; saveId(item.id); }
   showSuggestion(item);
-})();
+}
+window.onload = initSuggestion;
 
 </script>
 </body>
